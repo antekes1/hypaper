@@ -4,7 +4,26 @@ import argparse
 import json, os, random
 
 home_dir = os.path.expanduser("~")
-json_file = os.path.join(home_dir, '.config/hypaper/data.json')
+config_dir = os.path.join(home_dir, '.config/hypaper')
+json_file = os.path.join(config_dir,'data.json')
+
+default_data = {
+    "wallpapers_path": "~/Pictures/Wallpapers/",
+    "actual_wallpaper": ""
+}
+
+
+if os.path.exists(config_dir):
+    if os.path.exists(json_file):
+        pass
+    else:
+        with open(json_file, 'w') as file:
+            json.dump(default_data, file, indent=4)
+else:
+    os.mkdir(config_dir)
+    with open(json_file, 'w') as file:
+        json.dump(default_data, file, indent=4)
+
 #~/Pictures/Wallpapers/
 
 def set_wallpaper_path(args):
