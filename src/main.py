@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 
 import argparse
-import json, os, random
+import json, os, random, sys, requests
+
+#image_url = "https://picsum.photos/1920/1080"
+image_url = "https://picsum.photos/3840/2160"
 
 home_dir = os.path.expanduser("~")
 config_dir = os.path.join(home_dir, '.config/hypaper')
 json_file = os.path.join(config_dir,'data.json')
+save_images_path = os.path.join(home_dir, '.cache/hypaper')
 
 default_data = {
     "wallpapers_path": "~/Pictures/Wallpapers/",
     "actual_wallpaper": ""
 }
-
+#### setup ####
 
 if os.path.exists(config_dir):
     if os.path.exists(json_file):
@@ -24,8 +28,11 @@ else:
     with open(json_file, 'w') as file:
         json.dump(default_data, file, indent=4)
 
+
 #~/Pictures/Wallpapers/
 
+
+##### comands #####
 def set_wallpaper_path(args):
     with open(json_file, 'r') as file:
         data = json.load(file)
@@ -62,7 +69,27 @@ def list_wallpapers(args):
 
 def set_random_local(args):
     if args.source == "online":
-        print("This function is not available right now")
+        os.makedirs(save_images_path, exist_ok=True)
+        online_file_path = os.path.join(save_images_path, "online_image.jpg")
+        response = requests.get(image_url)
+
+        if response.status_code == 200:
+            with open(online_file_path, 'wb') as f:
+                f.write(response.content)
+                f.close()
+
+            stream = os.popen(f'swww img {online_file_path}')
+            output = stream.read()
+
+            with open(json_file, 'r') as file:
+                data = json.load(file)
+                file.close()
+            data["actual_wallpaper"] = ""
+            with open(json_file, 'w') as file:
+                json.dump(data, file, indent=4)
+                file.close()
+        else:
+            print("Failed to download the image")
     elif args.source == "local":
         with open(json_file, 'r') as file:
             data = json.load(file)
@@ -73,7 +100,7 @@ def set_random_local(args):
         if os.path.exists(path):
             if os.path.isdir(path):
                 files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-                if active_wallpaper != "":
+                if active_wallpaper in files:
                     files.remove(active_wallpaper)
                 wallpaper = random.choice(files)
                 stream = os.popen(f'swww img {path + wallpaper}')
@@ -125,6 +152,7 @@ def next_wallpaper(args):
             print("That folder do not exist. Set valid wallpapers folder with set_path")
 
 def main():
+
     parser = argparse.ArgumentParser(prog="hypaper", description="Simple hyprland wallpapers util (hypaper)")
     subparsers = parser.add_subparsers(dest="command",  help="")
 
@@ -142,7 +170,7 @@ def main():
     next_command.set_defaults(func=next_wallpaper)
 
     random_local_command = subparsers.add_parser('set_random', help='Set random wallpaper from your wallpapers folder (local) or internet (online)')
-    random_local_command.add_argument('source', choices=['online', 'local'],
+    random_local_command.add_argument('source', choices=['online', 'local'], default="local", nargs="?",
                                       help='Source of the random wallpaper (online or local)')
     random_local_command.set_defaults(func=set_random_local)
 

@@ -7,10 +7,8 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 SCRIPT_NAME="hypaper"
-SCRIPT_PATH="/usr/local/bin/$SCRIPT_NAME"
+SCRIPT_PATH="/usr/bin/$SCRIPT_NAME"
 USER_HOME=$(eval echo ~${SUDO_USER})
-DATA_DIR="$USER_HOME/.config/$SCRIPT_NAME"
-DATA_PATH="$DATA_DIR/data.json"
 
 cd src/
 
