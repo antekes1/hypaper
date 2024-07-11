@@ -2,6 +2,7 @@
 
 import argparse
 import json, os, random, sys, requests
+import shutil
 
 #image_url = "https://picsum.photos/1920/1080"
 image_url = "https://picsum.photos/3840/2160"
@@ -28,9 +29,18 @@ else:
     with open(json_file, 'w') as file:
         json.dump(default_data, file, indent=4)
 
+with open(json_file, 'r') as file:
+    data = json.load(file)
+    path = data["wallpapers_path"]
+    path = os.path.expanduser(path)
+    if not os.path.exists(path) or not os.path.isdir(path):
+        try:
+            print("Your wallpaper folder do not existing, creating this folder ...")
+            os.mkdir(path)
+        except:
+            print("There was error od creating dir in your wallpaper directory, change your directory and make sure that util has pesmission to this path.")
 
 #~/Pictures/Wallpapers/
-
 
 ##### comands #####
 def set_wallpaper_path(args):
@@ -125,7 +135,6 @@ def next_wallpaper(args):
             active_wallpaper = data["actual_wallpaper"]
             path = data["wallpapers_path"]
         path = os.path.expanduser(path)
-        print(path)
         if os.path.exists(path):
             if os.path.isdir(path):
                 files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
@@ -151,6 +160,33 @@ def next_wallpaper(args):
         else:
             print("That folder do not exist. Set valid wallpapers folder with set_path")
 
+def save_online_photo(args):
+    with open(json_file, 'r') as file:
+        data = json.load(file)
+        path = data["wallpapers_path"]
+    path = os.path.expanduser(path)
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            dst = os.path.join(path + "online_photo_1.jpg")
+            base_filename = "online_photo"
+            extension = ".jpg"
+            index = 1
+            while True:
+                filename = f"{base_filename}_{index}{extension}"
+                dst = os.path.join(path, filename)
+                if not os.path.exists(dst):
+                    break
+                index += 1
+            source_dir = os.path.join(home_dir, ".cache/hypaper/online_image.jpg")
+            if os.path.exists(source_dir):
+                shutil.copy(source_dir, dst)
+            else:
+                print("There is no wallpaper to save.")
+        else:
+            print("That path is not a dir")
+    else:
+        print("That folder do not exist. Set valid wallpapers folder with set_path")
+
 def main():
 
     parser = argparse.ArgumentParser(prog="hypaper", description="Simple hyprland wallpapers util (hypaper)")
@@ -168,6 +204,9 @@ def main():
 
     next_command = subparsers.add_parser('next_wallpaper', help='Change current wallpaper to next in wallpapers dir')
     next_command.set_defaults(func=next_wallpaper)
+
+    save_command = subparsers.add_parser('save', help='Save current online wallpaper to your wallpapers folder')
+    save_command.set_defaults(func=save_online_photo)
 
     random_local_command = subparsers.add_parser('set_random', help='Set random wallpaper from your wallpapers folder (local) or internet (online)')
     random_local_command.add_argument('source', choices=['online', 'local'], default="local", nargs="?",

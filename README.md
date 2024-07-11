@@ -7,6 +7,7 @@ Extremely basic wallpaper swapping utility for Hyprland.
 - `set_path [path]` sets new path of wallpapers folder
 - `next_wallpaper` sets your wallpaper to next wallpaper form your wallpapers folder
 - `set_random [source]` (source - online or local) - sets your wallpaper to random form your wallpapers folder (local) or internet (online)
+- `save` - save your current online wallpaper to your wallpapers folder
 
 # Installation
 ### Arch Linux
